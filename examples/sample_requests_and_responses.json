@@ -1,0 +1,86 @@
+{
+  "authentication": {
+    "type": "Basic Auth",
+    "username": "teacher",
+    "password": "classroom123"
+  },
+  "requests": {
+    "create_subject": {
+      "method": "POST",
+      "path": "/subjects",
+      "body": {
+        "name": "Mathematics"
+      }
+    },
+    "create_assessment": {
+      "method": "POST",
+      "path": "/assessments",
+      "body": {
+        "subject_id": 1,
+        "name": "Fractions Quiz",
+        "max_score": 20
+      }
+    },
+    "add_score": {
+      "method": "POST",
+      "path": "/scores",
+      "body": {
+        "assessment_id": 1,
+        "student_id": "STU-001",
+        "score": 16
+      }
+    },
+    "update_score": {
+      "method": "PUT",
+      "path": "/scores/1",
+      "body": {
+        "score": 18
+      }
+    },
+    "student_results": {
+      "method": "GET",
+      "path": "/students/STU-001/results"
+    },
+    "student_average": {
+      "method": "GET",
+      "path": "/students/STU-001/average"
+    }
+  },
+  "responses": {
+    "subject_created": {
+      "id": 1,
+      "name": "Mathematics"
+    },
+    "assessment_created": {
+      "id": 1,
+      "subject_id": 1,
+      "name": "Fractions Quiz",
+      "max_score": 20.0
+    },
+    "score_added": {
+      "id": 1,
+      "message": "Score added"
+    },
+    "student_results": [
+      {
+        "assessment_id": 1,
+        "assessment_name": "Fractions Quiz",
+        "subject_name": "Mathematics",
+        "score": 18.0,
+        "max_score": 20.0,
+        "percentage": 90.0
+      }
+    ],
+    "student_average": {
+      "student_id": "STU-001",
+      "average_percentage": 90.0,
+      "assessment_count": 1
+    },
+    "invalid_score": {
+      "detail": "Score cannot be greater than the maximum of 20.0"
+    },
+    "unauthorized": {
+      "detail": "Incorrect username or password"
+    }
+  }
+}

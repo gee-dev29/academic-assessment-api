@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Student Results API",
+    "description": "Basic-authenticated requests for subjects, assessments, and scores.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "{{username}}",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "{{password}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "username",
+      "value": "teacher"
+    },
+    {
+      "key": "password",
+      "value": "classroom123"
+    }
+  ],
+  "item": [
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "Create subject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mathematics\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/subjects"
+          }
+        },
+        {
+          "name": "List subjects",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        {
+          "name": "Create assessment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_id\": 1,\n  \"name\": \"Fractions Quiz\",\n  \"max_score\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/assessments"
+          }
+        },
+        {
+          "name": "List assessments",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/assessments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Student results",
+      "item": [
+        {
+          "name": "Add score",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment_id\": 1,\n  \"student_id\": \"STU-001\",\n  \"score\": 16\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/scores"
+          }
+        },
+        {
+          "name": "Update score",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 18\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/scores/1"
+          }
+        },
+        {
+          "name": "Get student results",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/students/STU-001/results"
+          }
+        },
+        {
+          "name": "Get student average",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/students/STU-001/average"
+          }
+        }
+      ]
+    }
+  ]
+}
