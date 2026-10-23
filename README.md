@@ -10,18 +10,16 @@ Use Python 3.10 or newer.
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+python -m app.create_user
 ```
-The database is created at `data/scores.db` the first time the service starts. To use another location, set `DATABASE_PATH`. The first startup also creates the user-account table.
 
-Create a user account locally before making API requests:
+Enter a username and a password of at least 12 characters when prompted. Then start the API:
 
 ```bash
-python -m app.create_user
 uvicorn app.main:app --reload
 ```
 
-The command securely prompts for a username and password; passwords must contain at least 12 characters and are stored as salted PBKDF2 hashes. Send those credentials with HTTP Basic authentication on each API request. All registered users can access all API routes. Use HTTPS outside local development.
+The API is available at <http://127.0.0.1:8000>. The SQLite database is created at `data/scores.db`; to use another location, set `DATABASE_PATH` before creating the user and starting the API. Passwords are stored as salted PBKDF2 hashes. All registered users can access all API routes. Use HTTPS outside local development.
 
 ## API documentation
 
@@ -45,78 +43,59 @@ All API routes require Basic Auth. The OpenAPI documentation pages are provided 
 
 The average is the arithmetic mean of the student's assessment percentages, so assessments with different maximum scores can be compared consistently.
 
-## Try a complete example
+## Send requests
 
-Send `Content-Type: application/json` on requests with a body. Authenticate with the local practice credentials above.
+You can send requests from Swagger UI at <http://127.0.0.1:8000/docs>: select **Authorize**, enter the username and password you created, then open an endpoint and select **Try it out**.
+
+You can also use `curl` from a terminal. Replace `YOUR_USERNAME` and `YOUR_PASSWORD` with the credentials created above. Requests with a JSON body need the `Content-Type: application/json` header.
 
 Create a subject:
 
-```http
-POST /subjects
+```bash
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Mathematics"}' \
+  http://127.0.0.1:8000/subjects
 ```
 
-```json
-{"name": "Mathematics"}
+Use the returned subject `id` to create an assessment:
+
+```bash
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' \
+  -H 'Content-Type: application/json' \
+  -d '{"subject_id":1,"name":"Fractions Quiz","max_score":20}' \
+  http://127.0.0.1:8000/assessments
 ```
 
-Response (`201 Created`):
+Use the returned assessment `id` to add a score:
 
-```json
-{"id": 1, "name": "Mathematics"}
+```bash
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' \
+  -H 'Content-Type: application/json' \
+  -d '{"assessment_id":1,"student_id":"STU-001","score":16}' \
+  http://127.0.0.1:8000/scores
 ```
 
-Create an assessment:
+Other example requests:
 
-```http
-POST /assessments
+```bash
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' http://127.0.0.1:8000/subjects
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' 'http://127.0.0.1:8000/assessments?subject_id=1'
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' http://127.0.0.1:8000/students/STU-001/results
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' http://127.0.0.1:8000/students/STU-001/average
 ```
 
-```json
-{"subject_id": 1, "name": "Fractions Quiz", "max_score": 20}
+Correct an existing score with a JSON `PUT` request:
+
+```bash
+curl -u 'YOUR_USERNAME:YOUR_PASSWORD' \
+  -X PUT \
+  -H 'Content-Type: application/json' \
+  -d '{"score":18}' \
+  http://127.0.0.1:8000/scores/1
 ```
 
-Add a score:
-
-```http
-POST /scores
-```
-
-```json
-{"assessment_id": 1, "student_id": "STU-001", "score": 16}
-```
-
-Response (`201 Created`):
-
-```json
-{"id": 1, "message": "Score added"}
-```
-
-To correct that result, send `PUT /scores/1` with `{"score": 18}`. Then request `GET /students/STU-001/results`:
-
-```json
-[
-  {
-    "assessment_id": 1,
-    "assessment_name": "Fractions Quiz",
-    "subject_name": "Mathematics",
-    "score": 18.0,
-    "max_score": 20.0,
-    "percentage": 90.0
-  }
-]
-```
-
-`GET /students/STU-001/average` returns:
-
-```json
-{
-  "student_id": "STU-001",
-  "average_percentage": 90.0,
-  "assessment_count": 1
-}
-```
-
-Full sample requests and responses are in [`examples/sample_requests_and_responses.json`](examples/sample_requests_and_responses.json). An importable Postman collection is in [`postman/Student-Results-API.postman_collection.json`](postman/Student-Results-API.postman_collection.json). Set its `baseUrl`, `username`, and `password` variables for your local server.
+The full sample requests are also available in [`examples/sample_requests_and_responses.json`](examples/sample_requests_and_responses.json), and the Postman collection is in [`postman/Student-Results-API.postman_collection.json`](postman/Student-Results-API.postman_collection.json). Set its `baseUrl`, `username`, and `password` variables before sending requests.
 
 ## Validation and errors
 
