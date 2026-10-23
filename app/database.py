@@ -21,6 +21,9 @@ def get_connection() -> Generator[sqlite3.Connection, None, None]:
 
 
 def create_tables() -> None:
+    if DATABASE_PATH != ":memory:":
+        Path(DATABASE_PATH).parent.mkdir(parents=True, exist_ok=True)
+
     connection = sqlite3.connect(DATABASE_PATH)
     try:
         connection.execute("PRAGMA foreign_keys = ON")
@@ -45,6 +48,12 @@ def create_tables() -> None:
                 student_id TEXT NOT NULL,
                 score REAL NOT NULL CHECK (score >= 0),
                 UNIQUE (assessment_id, student_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                password_salt BLOB NOT NULL,
+                password_hash BLOB NOT NULL
             );
             """
         )
