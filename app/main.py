@@ -7,6 +7,9 @@ from app.database import create_tables
 from app.routers import assessments, results, subjects
 
 
+create_tables()
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     create_tables()
