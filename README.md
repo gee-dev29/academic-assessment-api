@@ -12,18 +12,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
+The database is created at `data/scores.db` the first time the service starts. To use another location, set `DATABASE_PATH`. The first startup also creates the user-account table.
 
-The database is created at `data/scores.db` the first time the service starts. To use another location, set `DATABASE_PATH`.
-
-For this learning project, the default Basic Auth login is `teacher` / `classroom123`. It is only for local practice. Set your own values before starting the service:
+Create a user account locally before making API requests:
 
 ```bash
-export API_USERNAME=teacher
-export API_PASSWORD=your-local-password
+python -m app.create_user
 uvicorn app.main:app --reload
 ```
 
-Basic Auth sends credentials with requests. Use HTTPS and strong, private credentials outside local practice; do not use this demo login for real student data.
+The command securely prompts for a username and password; passwords must contain at least 12 characters and are stored as salted PBKDF2 hashes. Send those credentials with HTTP Basic authentication on each API request. All registered users can access all API routes. Use HTTPS outside local development.
 
 ## API documentation
 
