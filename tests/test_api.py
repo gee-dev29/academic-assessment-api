@@ -1,18 +1,23 @@
 import base64
+import sqlite3
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app import database
 from app.main import app
+from app.repositories.users import create_user
 
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "DATABASE_PATH", str(tmp_path / "test.db"))
-    monkeypatch.setenv("API_USERNAME", "teacher")
-    monkeypatch.setenv("API_PASSWORD", "test-password")
     with TestClient(app) as test_client:
+        connection = sqlite3.connect(database.DATABASE_PATH)
+        try:
+            create_user(connection, "teacher", "test-password")
+        finally:
+            connection.close()
         yield test_client
 
 
@@ -44,6 +49,29 @@ def test_authentication_is_required(client: TestClient) -> None:
     response = client.get("/subjects")
     assert response.status_code == 401
     assert response.headers["www-authenticate"] == "Basic"
+
+
+def test_authentication_rejects_incorrect_credentials(client: TestClient) -> None:
+    response = client.get(
+        "/subjects", headers=auth_headers(password="incorrect-password")
+    )
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Basic"
+
+
+def test_user_password_is_stored_as_a_salted_hash(client: TestClient) -> None:
+    connection = sqlite3.connect(database.DATABASE_PATH)
+    try:
+        salt, password_hash = connection.execute(
+            "SELECT password_salt, password_hash FROM users WHERE username = ?",
+            ("teacher",),
+        ).fetchone()
+    finally:
+        connection.close()
+
+    assert len(salt) == 16
+    assert len(password_hash) == 32
+    assert password_hash != b"test-password"
 
 
 def test_add_update_and_read_student_results(client: TestClient) -> None:
